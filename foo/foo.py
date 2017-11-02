@@ -6,7 +6,7 @@ import os
 
 DEBUG=os.environ.get('DEBUG','ON')=='on'
 
-SECRET_KEY=os.environ.get(' SECRET_KEY',os.urandom(32))
+SECRET_KEY=os.environ.get(' SECRET_KEY','%*iaqza(^gapko(s#dy_d^zib3d$44ifwvdu!f1^)mvw!#dt@f')
 
 
 
