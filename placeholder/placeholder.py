@@ -1,51 +1,50 @@
 
 # -*- coding: utf-8 -*-
-
-from django.conf.urls import  url
-from  django.http import HttpResponse
-from django.conf    import settings
+import hashlib
+from django.conf import settings
 import sys
 import os
-from django import forms
 from PIL import Image,ImageDraw
 from io import  BytesIO
-import hashlib
-from django.views.decorators.http import etag
-from django.core.urlresolvers import reverse
-from django.core.cache import cache
-from django.shortcuts import render
-
+from django.contrib import staticfiles
 
 DEBUG=os.environ.get('DEBUG','ON')=='on'
 SECRET_KEY=os.environ.get(' SECRET_KEY','-+tv(2$m-31qz+csa+jf_ci+@$5@a5ijr#m9_%a^_ec45s8fuw')
+ALLOWED_HOSTS=os.environ.get('ALLOWED_HOSTS','127.0.0.1').split('.') #返回路径和文件名
 BASE_DIR=os.path.dirname(__file__)
 settings.configure(
     DEBUG=DEBUG,
     SECRET_KEY=SECRET_KEY,
     ROOT_URLCONF=__name__,
+    ALLOWED_HOSTS='*',
     MIDDLEWARE_CLASS = (
-        'django.middleware.security.SecurityMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
                        ),
-    INSTALLED_APPS=('django.contrib.staticfiles'),
+    INSTALLED_APPS=(
+        'django.contrib.staticfiles',
+    ),
     TEMPLATES=(
         {
             'BACKEND':'django.template.backends.django.DjangoTemplates',
-            'DIRS':(os.path.join(BASE_DIR,'templates'),),
-        }
+            'DIRS':(os.path.join(BASE_DIR,'templates'),)
+        },
     ),
     STATICFILES_DIRS=(
         os.path.join(BASE_DIR,'static'),
     ),
-    STATIC_URL='/static',
+    STATIC_URL='/static/',
     )
 
-
+from django import forms
+from django.conf.urls import url
+from django.core.cache import cache
+from django.core.urlresolvers import reverse
+from django.core.wsgi import get_wsgi_application
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render
+from django.views.decorators.http import etag
 
 
 
@@ -93,16 +92,18 @@ def placeholder(request,width,height):
 
 
 def index(request):
-    example=reverse('placeholder',kwargs={'width':50,'height':50}) #
+    example=reverse('placeholder',kwargs={'width':50,'height':50}) # 翻转 试图来创建一个URL的样例
     context={
         'example':request.build_absolute_uri(example) #返回 example 的绝对URL
     }
+    return render(request,'home.html',context) #渲染 home.html模板
 
 urlpatterns=(
-    url(r'^$',index),
-    url(r'^image/(?p<width>[0-9]+)*(?p<height>[0-9]+)/$',placeholder,
-        name='placeholder',
+    url(r'^$',index,name='homepage'),
+    url(r'^image/(?P<width>[0-9]+)*(?P<height>[0-9]+)/$',placeholder,
+        name='placeholder',),
 )
+application=get_wsgi_application()
 
 if __name__ == "__main__":
     from django.core.management import execute_from_command_line
